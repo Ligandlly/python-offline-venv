@@ -1,0 +1,75 @@
+name: Build Ubuntu offline .venv
+
+on:
+  workflow_dispatch:
+    inputs:
+      python-version:
+        description: Python 版本号
+        required: true
+        default: '3.14'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    env:
+      PYVER: ${{ inputs.python-version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check requirements.txt
+        run: |
+          if [ ! -f requirements.txt ]; then
+            echo "未找到 requirements.txt"
+            exit 1
+          fi
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          allow-prereleases: true
+
+      - name: Create .venv and install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install -r requirements.txt
+
+      - name: Download offline packages
+        run: |
+          mkdir -p offline-packages
+          .venv/bin/python -m pip download pip setuptools wheel \
+            --dest offline-packages --no-deps --prefer-binary
+          .venv/bin/python -m pip download -r requirements.txt \
+            --dest offline-packages --prefer-binary
+
+      - name: Create offline install script
+        run: |
+          {
+            echo '#!/usr/bin/env bash'
+            echo 'set -euo pipefail'
+            echo ''
+            echo 'PY="${1:-python3}"'
+            echo ''
+            echo '"$PY" -m venv .venv'
+            echo '.venv/bin/python -m pip install --no-index --find-links offline-packages --upgrade pip setuptools wheel'
+            echo '.venv/bin/python -m pip install --no-index --find-links offline-packages -r requirements.txt'
+          } > install-offline.sh
+          chmod +x install-offline.sh
+
+      - name: Package artifacts
+        run: |
+          tar -czf "offline-venv-ubuntu-py$PYVER.tar.gz" \
+            .venv offline-packages install-offline.sh requirements.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-venv-ubuntu-py${{ env.PYVER }}
+          path: offline-venv-ubuntu-py${{ env.PYVER }}.tar.gz
+          if-no-files-found: error
