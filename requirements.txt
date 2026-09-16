@@ -7,7 +7,7 @@ python-multipart
 
 # ===== 数据与配置 =====
 sqlalchemy==2.0.51
-pymysql>=1.1.0                 # MySQL 驱动（纯 Python，兼容 5.7）
+psycopg[binary]>=3.2,<4        # PostgreSQL 驱动（纯 Python 核心 + C 扩展，免装 libpq）
 pydantic==2.13.4
 pydantic-settings>=2.4.0       # .env 配置加载
 PyJWT>=2.9.0                   # JWT（纯 Python，py3.14 安全）
