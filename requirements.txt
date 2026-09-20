@@ -11,6 +11,7 @@ psycopg[binary]>=3.2,<4        # PostgreSQL 驱动（纯 Python 核心 + C 扩�
 pydantic==2.13.4
 pydantic-settings>=2.4.0       # .env 配置加载
 PyJWT>=2.9.0                   # JWT（纯 Python，py3.14 安全）
+pymysql>=1.1.0                 # MySQL 驱动（纯 Python，兼容 5.7）
 
 # ===== RAG 编排（LlamaIndex 0.14，已装勿升级破坏）=====
 llama-index-core==0.14.23
