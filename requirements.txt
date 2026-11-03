@@ -1,0 +1,33 @@
+# 知识库 MCP 服务依赖（运行时 + 测试，一份文件装完）
+#
+# 环境要求：Python 3.11+（本项目在 CPython 3.14 / linux x86_64 验证）
+# 离线准备：在【在线机器】执行  ./download-offline.sh  把全部 wheel 下到 offline-packages/，
+#           再把整个目录拷到离线机器执行  ./install-offline.sh
+#           注意：在线机器的 Python 版本与平台必须和离线机器一致（wheel 标签要匹配）。
+# 需要的外部服务：Milvus 2.5+（服务端，提供 BM25 Function 与中文 analyzer）
+
+# ===== Web / API =====
+fastapi==0.139.2
+uvicorn[standard]==0.40.0
+jinja2==3.1.4                # 人类后台页面模板
+python-multipart==0.0.32     # 文件上传 multipart（/api/documents/upload）
+
+# ===== 存储与配置 =====
+sqlalchemy==2.0.51           # ORM（SQLite 单文件库，无需数据库服务）
+pydantic==2.13.4
+pydantic-settings==2.15.0    # .env 配置加载
+
+# ===== 向量库（dense + BM25 稀疏混合检索）=====
+pymilvus==3.0.1
+
+# ===== AI 客户端（OpenAI 兼容端点，embedding 与 chat 共用）=====
+openai==2.54.0
+
+# ===== MCP（streamable-http 传输）=====
+# 会把 starlette/uvicorn/httpx/jsonschema/sse-starlette 等间接依赖一起装上；
+# 版本区间留宽，pip download 时锁成实际下载到的版本即可（下载下来的 wheel 为准）
+mcp>=1.10,<2
+
+# ===== 测试 =====
+pytest==9.1.1
+httpx==0.28.1                # mcp 依赖，同时供 TestClient 使用
